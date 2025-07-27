@@ -21,3 +21,13 @@ app.listen(process.env.PORT,()=>{
 
 app.use('/core-api-user/v3',userRoute)
 app.use('/core-api-auth/v3',authRoute)
+
+app.use((err, req, res, next)=>{
+    const statusCode = err.statusCode || 500;
+    const emessage = err.message || 'Internal Server Error'
+    return res.status(statusCode).json({
+        statusCode,
+        mboolean: true,
+        emessage  
+    })
+})
