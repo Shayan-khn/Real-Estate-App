@@ -1,12 +1,14 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { signInStart, signInSuccess, signInFailure } from '../user/userSlice'
 
 export default function SignIn() {
   const [formData, setFormData] = useState({})
-  const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const { loading, error } = useSelector((state)=> state.user)
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -16,7 +18,7 @@ export default function SignIn() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      setLoading(true)
+      dispatch(signInStart())
       const res = await fetch('/core-api-auth/v3/SignIn', {
         method: 'POST',
         headers: {
@@ -27,29 +29,23 @@ export default function SignIn() {
       const data = await res.json()
       console.log("sign up response is :", data)
       if (data.mboolean == true) {
-        setLoading(false)
-        setError(data.emessage)
-        setTimeout(() => {
-          setError(null)
-        }, 1000)
+        dispatch(signInFailure(data.emessage))
         return
       }
-      setError(null)
-      setLoading(false)
+      dispatch(signInSuccess(data))
       setSuccess(data.message)
       setTimeout(() => {
         setSuccess(null)
       }, 1000)
       navigate('/')
     } catch (error) {
-      setLoading(false)
-      setError(error.message)
+      dispatch(signInFailure(data.emessage))
     }
   }
   console.log(formData)
   return (
     <div className="p-3 max-w-lg mx-auto">
-      <h1 className="text-3xl text-center font-semibold my-7">Sign Up</h1>
+      <h1 className="text-3xl text-center font-semibold my-7">Sign In</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input type="email" placeholder='Enter Email' id='email' className="border p-3 rounded-lg" onChange={handleChange} />
         <input type="password" placeholder='Enter Password' id='password' className="border p-3 rounded-lg" onChange={handleChange} />
